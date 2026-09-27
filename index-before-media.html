@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V-CODE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#0b0b0f;color:white}
+header{text-align:center;padding:25px}
+h1{font-size:40px;margin:5px}
+p{color:#aaa}
+.page{display:none;padding:15px}
+.active{display:block}
+.card{background:#17171e;padding:20px;border-radius:18px;margin-bottom:15px}
+button,input,textarea{width:100%;padding:15px;margin:7px 0;border:0;border-radius:12px;font-size:16px}
+button{font-weight:bold}
+.primary{background:white;color:#111}
+.secondary{background:#25252d;color:white}
+.code{text-align:center;font-size:30px;font-weight:bold;letter-spacing:3px;margin:20px}
+#qr{display:block;width:200px;margin:auto;background:white;padding:10px}
+.result{display:none}
+.profile{background:#25252d;padding:20px;border-radius:14px;line-height:1.7}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>V-CODE</h1>
+<p>Create • Find • Connect</p>
+</header>
+
+<section id="home" class="page active">
+<div class="card">
+<h2>Welcome 👋</h2>
+<button class="primary" onclick="page('create')">✨ Create V-Code</button>
+<button class="primary" onclick="page('find')">🔎 Find V-Code</button>
+<button class="primary" onclick="page('scan')">📷 Scan QR</button>
+</div>
+</section>
+
+<section id="create" class="page">
+<div class="card">
+<button class="secondary" onclick="page('home')">← Home</button>
+<h2>✨ Create V-Code</h2>
+<input id="name" placeholder="Your name">
+<textarea id="message" placeholder="Your message"></textarea>
+<button class="primary" onclick="create()">Generate</button>
+</div>
+
+<div id="created" class="card result">
+<h3>Your V-Code</h3>
+<div id="newcode" class="code"></div>
+<p id="newinfo"></p>
+<button class="primary" onclick="copyCode()">Copy Code</button>
+</div>
+</section>
+
+<section id="find" class="page">
+<div class="card">
+<button class="secondary" onclick="page('home')">← Home</button>
+<h2>🔎 Find V-Code</h2>
+<input id="search" placeholder="V-ABC123">
+<button class="primary" onclick="find()">Find</button>
+</div>
+<div id="found" class="card result">
+<h2>👤 Profile</h2>
+<div class="profile">
+<b id="fname"></b><br><br>
+<span id="fmessage"></span><br><br>
+<small id="fcode"></small>
+</div>
+</div>
+</section>
+
+<section id="scan" class="page">
+<div class="card">
+<button class="secondary" onclick="page('home')">← Home</button>
+<h2>📷 Scan QR</h2>
+<p>QR scanner will be added in the next APK build.</p>
+</div>
+</section>
+
+<script>
+function page(id){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+function database(){
+ return JSON.parse(localStorage.getItem('vcodeDB')||'{}');
+}
+
+function create(){
+ const name=document.getElementById('name').value.trim();
+ const message=document.getElementById('message').value.trim();
+ if(!name)return alert('Enter your name');
+
+ const code='V-'+Math.random().toString(36).substring(2,8).toUpperCase();
+ const db=database();
+
+ db[code]={name,message};
+ localStorage.setItem('vcodeDB',JSON.stringify(db));
+
+ document.getElementById('created').style.display='block';
+ document.getElementById('newcode').textContent=code;
+ document.getElementById('newinfo').textContent='Created for '+name;
+}
+
+function find(){
+ const code=document.getElementById('search').value
+ .replace(/\s/g,'').toUpperCase();
+
+ const db=database();
+ const data=db[code];
+
+ if(!data)return alert('V-Code not found');
+
+ document.getElementById('found').style.display='block';
+ document.getElementById('fname').textContent=data.name;
+ document.getElementById('fmessage').textContent=data.message||'No message';
+ document.getElementById('fcode').textContent=code;
+}
+
+function copyCode(){
+ navigator.clipboard.writeText(
+ document.getElementById('newcode').textContent
+ );
+ alert('Copied!');
+}
+</script>
+
+</body>
+</html>

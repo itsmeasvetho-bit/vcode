@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V-CODE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#0b0b0f;color:white}
+header{text-align:center;padding:25px}
+h1{font-size:40px;margin:5px}
+p{color:#aaa}
+.page{display:none;padding:15px}
+.active{display:block}
+.card{background:#17171e;padding:20px;border-radius:18px;margin-bottom:15px}
+button,input,textarea{width:100%;padding:15px;margin:7px 0;border:0;border-radius:12px;font-size:16px}
+button{font-weight:bold}
+.primary{background:white;color:#111}
+.secondary{background:#25252d;color:white}
+.code{text-align:center;font-size:30px;font-weight:bold;letter-spacing:3px;margin:20px}
+#qr{display:block;width:200px;margin:auto;background:white;padding:10px}
+.result{display:none}
+.profile{background:#25252d;padding:20px;border-radius:14px;line-height:1.7}
+</style>
+<script src="qrcode.min.js"></script>
+</head>
+
+<body>
+
+<header>
+<h1>V-CODE</h1>
+<p>Create • Find • Connect</p>
+</header>
+
+<section id="home" class="page active">
+<div class="card">
+<h2>Welcome 👋</h2>
+<button class="primary" onclick="page('create')">✨ Create V-Code</button>
+<button class="primary" onclick="page('find')">🔎 Find V-Code</button>
+<button class="primary" onclick="page('scan')">📷 Scan QR</button>
+</div>
+</section>
+
+<section id="create" class="page">
+<div class="card">
+<button class="secondary" onclick="page('home')">← Home</button>
+<h2>✨ Create V-Code</h2>
+<input id="name" placeholder="Your name">
+<textarea id="message" placeholder="Your message"></textarea>
+<button class="primary" onclick="create()">Generate</button>
+</div>
+
+<div id="created" class="card result">
+<h3>Your V-Code</h3>
+<div id="newcode" class="code"></div>
+<p id="newinfo"></p>
+<button class="primary" onclick="copyCode()">Copy Code</button>
+</div>
+</section>
+
+<section id="find" class="page">
+<div class="card">
+<button class="secondary" onclick="page('home')">← Home</button>
+<h2>🔎 Find V-Code</h2>
+<input id="search" placeholder="V-ABC123">
+<button class="primary" onclick="find()">Find</button>
+</div>
+<div id="found" class="card result">
+<h2>👤 Profile</h2>
+<div class="profile">
+<b id="fname"></b><br><br>
+<span id="fmessage"></span><br><br>
+<small id="fcode"></small>
+</div>
+</div>
+</section>
+
+<section id="scan" class="page">
+<div class="card">
+<button class="secondary" onclick="page('home')">← Home</button>
+<h2>📷 Scan QR</h2>
+<p>QR scanner will be added in the next APK build.</p>
+</div>
+</section>
+
+<script>
+function page(id){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+function database(){
+ return JSON.parse(localStorage.getItem('vcodeDB')||'{}');
+}
+
+function addMediaUI(){
+ const message=document.getElementById('message');
+ if(!message || document.getElementById('mediaBox')) return;
+
+ const box=document.createElement('div');
+ box.id='mediaBox';
+ box.style.margin='12px 0';
+ box.innerHTML=`
+   <label style="display:block;margin:8px 0;font-weight:bold">
+     🖼️ Add Picture
+     <input id="pic" type="file" accept="image/*" style="display:block;margin-top:6px">
+   </label>
+
+   <label style="display:block;margin:8px 0;font-weight:bold">
+     🎥 Add Video
+     <input id="vid" type="file" accept="video/*" style="display:block;margin-top:6px">
+   </label>
+
+   <small id="mediaStatus">No media selected</small>
+ `;
+ message.parentNode.insertBefore(box,message.nextSibling);
+}
+
+document.addEventListener('DOMContentLoaded',addMediaUI);
+
+function readFile(file){
+ return new Promise((resolve,reject)=>{
+   if(!file){resolve(null);return;}
+   const reader=new FileReader();
+   reader.onload=()=>resolve({
+     name:file.name,
+     type:file.type,
+     data:reader.result
+   });
+   reader.onerror=reject;
+   reader.readAsDataURL(file);
+ });
+}
+
+async function create(){
+ const name=document.getElementById('name').value.trim();
+ const message=document.getElementById('message').value.trim();
+
+ if(!name)return alert('Enter your name');
+
+ const pic=document.getElementById('pic')?.files[0];
+ const vid=document.getElementById('vid')?.files[0];
+
+ if(pic && pic.size > 3000000)
+   return alert('Picture is too large. Use an image under 3 MB.');
+
+ if(vid && vid.size > 8000000)
+   return alert('Video is too large. Use a video under 8 MB.');
+
+ const status=document.getElementById('mediaStatus');
+ if(status) status.textContent='Saving...';
+
+ try{
+   const picture=await readFile(pic);
+   const video=await readFile(vid);
+
+   const code='V-'+Math.random().toString(36).substring(2,8).toUpperCase();
+   const db=database();
+
+   db[code]={
+     name,
+     message,
+     picture,
+     video,
+     createdAt:Date.now()
+   };
+
+   localStorage.setItem('vcodeDB',JSON.stringify(db));
+
+   document.getElementById('created').style.display='block';
+   document.getElementById('newcode').textContent=code;
+   document.getElementById('newinfo').textContent='Created for '+name;
+
+let qrBox=document.getElementById('qrBox');
+if(!qrBox){
+  qrBox=document.createElement('div');
+  qrBox.id='qrBox';
+  qrBox.style.cssText='text-align:center;margin:18px 0;';
+  document.getElementById('created').appendChild(qrBox);
+}
+
+qrBox.innerHTML='<b>Scan this QR Code</b><br><canvas id="qrCanvas" style="margin-top:10px;background:white;padding:8px;border-radius:10px"></canvas>';
+
+if(window.QRCode && QRCode.toCanvas){
+  QRCode.toCanvas(
+    document.getElementById('qrCanvas'),
+    code,
+    {
+      width:220,
+      margin:2,
+      errorCorrectionLevel:'M'
+    },
+    function(err){
+      if(err) console.error(err);
+    }
+  );
+}else{
+  qrBox.innerHTML += '<p>QR library not loaded.</p>';
+}
+
+   if(status) status.textContent='Media saved ✓';
+
+ }catch(e){
+   console.error(e);
+   alert('Could not save the media. The file may be too large.');
+ }
+}
+
+function find(){
+ const code=document.getElementById('search').value
+ .replace(/\s/g,'').toUpperCase();
+
+ const db=database();
+ const data=db[code];
+
+ if(!data)return alert('V-Code not found');
+
+ document.getElementById('found').style.display='block';
+ document.getElementById('fname').textContent=data.name;
+ document.getElementById('fmessage').textContent=data.message||'No message';
+ document.getElementById('fcode').textContent=code;
+
+ let old=document.getElementById('foundMedia');
+ if(old) old.remove();
+
+ const media=document.createElement('div');
+ media.id='foundMedia';
+ media.style.marginTop='15px';
+
+ if(data.picture){
+   const title=document.createElement('p');
+   title.textContent='🖼️ Picture';
+   title.style.fontWeight='bold';
+
+   const img=document.createElement('img');
+   img.src=data.picture.data;
+   img.style.maxWidth='100%';
+   img.style.maxHeight='400px';
+   img.style.borderRadius='12px';
+
+   media.appendChild(title);
+   media.appendChild(img);
+ }
+
+ if(data.video){
+   const title=document.createElement('p');
+   title.textContent='🎥 Video';
+   title.style.fontWeight='bold';
+   title.style.marginTop='15px';
+
+   const video=document.createElement('video');
+   video.src=data.video.data;
+   video.controls=true;
+   video.style.width='100%';
+   video.style.maxHeight='400px';
+   video.style.borderRadius='12px';
+
+   media.appendChild(title);
+   media.appendChild(video);
+ }
+
+ document.getElementById('found').appendChild(media);
+}
+
+function copyCode(){
+ navigator.clipboard.writeText(
+ document.getElementById('newcode').textContent
+ );
+ alert('Copied!');
+}
+</script>
+
+</body>
+</html>
