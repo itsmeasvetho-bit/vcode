@@ -5,21 +5,224 @@
 <title>V-CODE</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#0b0b0f;color:white}
-header{text-align:center;padding:25px}
-h1{font-size:40px;margin:5px}
-p{color:#aaa}
-.page{display:none;padding:15px}
+
+html{
+ scroll-behavior:smooth;
+}
+
+body{
+ margin:0;
+ min-height:100vh;
+ font-family:Arial,sans-serif;
+ color:#fff;
+ background:
+ radial-gradient(circle at 15% 10%,rgba(0,220,255,.20),transparent 28%),
+ radial-gradient(circle at 85% 20%,rgba(130,60,255,.22),transparent 30%),
+ linear-gradient(135deg,#05050b,#0b1020 50%,#05050b);
+ overflow-x:hidden;
+}
+
+body:before{
+ content:"";
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.025),transparent 65%);
+}
+
+header{
+ position:relative;
+ text-align:center;
+ padding:38px 20px 25px;
+}
+
+header h1{
+ margin:0;
+ font-size:52px;
+ font-weight:900;
+ letter-spacing:6px;
+ background:linear-gradient(90deg,#fff,#67e8ff,#a78bfa,#fff);
+ -webkit-background-clip:text;
+ background-clip:text;
+ color:transparent;
+ text-shadow:0 0 35px rgba(80,220,255,.25);
+}
+
+header p{
+ margin:8px 0 0;
+ color:#9da5bb;
+ font-size:14px;
+ letter-spacing:2px;
+}
+
+header:after{
+ content:"Developed by Vetho";
+ position:absolute;
+ right:15px;
+ top:12px;
+ font-size:11px;
+ color:#8f9ab3;
+ letter-spacing:.5px;
+}
+
+.page{
+ display:none;
+ max-width:520px;
+ margin:auto;
+ padding:12px 18px 40px;
+ animation:show .35s ease;
+}
+
 .active{display:block}
-.card{background:#17171e;padding:20px;border-radius:18px;margin-bottom:15px}
-button,input,textarea{width:100%;padding:15px;margin:7px 0;border:0;border-radius:12px;font-size:16px}
-button{font-weight:bold}
-.primary{background:white;color:#111}
-.secondary{background:#25252d;color:white}
-.code{text-align:center;font-size:30px;font-weight:bold;letter-spacing:3px;margin:20px}
-#qr{display:block;width:200px;margin:auto;background:white;padding:10px}
-.result{display:none}
-.profile{background:#25252d;padding:20px;border-radius:14px;line-height:1.7}
+
+@keyframes show{
+ from{opacity:0;transform:translateY(12px)}
+ to{opacity:1;transform:translateY(0)}
+}
+
+.card{
+ position:relative;
+ background:rgba(18,22,38,.78);
+ border:1px solid rgba(255,255,255,.09);
+ backdrop-filter:blur(18px);
+ -webkit-backdrop-filter:blur(18px);
+ padding:22px;
+ border-radius:24px;
+ margin-bottom:16px;
+ box-shadow:0 18px 50px rgba(0,0,0,.35);
+}
+
+.card h2{
+ margin-top:4px;
+ font-size:25px;
+}
+
+.card h3{
+ font-size:20px;
+}
+
+button,input,textarea{
+ width:100%;
+ padding:15px 16px;
+ margin:7px 0;
+ border:1px solid rgba(255,255,255,.08);
+ border-radius:15px;
+ font-size:16px;
+ outline:none;
+ transition:.2s;
+}
+
+input,textarea{
+ background:rgba(255,255,255,.06);
+ color:#fff;
+}
+
+input::placeholder,textarea::placeholder{
+ color:#778096;
+}
+
+textarea{
+ min-height:110px;
+ resize:vertical;
+}
+
+button{
+ cursor:pointer;
+ font-weight:800;
+ color:white;
+ background:rgba(255,255,255,.07);
+}
+
+button:active{
+ transform:scale(.97);
+}
+
+.primary{
+ color:#061018;
+ border:0;
+ background:linear-gradient(135deg,#67e8ff,#8b5cf6);
+ box-shadow:0 8px 25px rgba(90,180,255,.2);
+}
+
+.primary:hover{
+ filter:brightness(1.1);
+}
+
+.secondary{
+ background:rgba(255,255,255,.06);
+ color:#dbe5ff;
+}
+
+.code{
+ text-align:center;
+ font-size:31px;
+ font-weight:900;
+ letter-spacing:4px;
+ margin:20px 0;
+ padding:17px;
+ border-radius:17px;
+ background:linear-gradient(135deg,rgba(103,232,255,.12),rgba(139,92,246,.15));
+ border:1px solid rgba(103,232,255,.18);
+ color:#8ff1ff;
+}
+
+.result{
+ display:none;
+}
+
+.profile{
+ background:rgba(255,255,255,.045);
+ border:1px solid rgba(255,255,255,.07);
+ padding:20px;
+ border-radius:18px;
+ line-height:1.7;
+}
+
+.profile b{
+ font-size:22px;
+ color:#8ff1ff;
+}
+
+#mediaBox{
+ background:rgba(255,255,255,.035);
+ border:1px solid rgba(255,255,255,.07);
+ padding:15px;
+ border-radius:18px;
+}
+
+#mediaBox input{
+ padding:10px;
+ font-size:14px;
+}
+
+#qrBox{
+ background:white;
+ border-radius:20px;
+ padding:15px;
+ color:#111;
+ box-shadow:0 10px 35px rgba(0,0,0,.3);
+}
+
+#qrCanvas{
+ max-width:100%;
+ height:auto;
+}
+
+small{
+ color:#8f9ab3;
+}
+
+@media(max-width:480px){
+ header h1{
+  font-size:43px;
+ }
+ header{
+  padding-top:45px;
+ }
+ .card{
+  padding:18px;
+ }
+}
 </style>
 <script src="qrcode.min.js"></script>
 </head>
